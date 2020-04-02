@@ -1,4 +1,5 @@
 #!/bin/bash
+
 set -v
 
 
@@ -62,7 +63,6 @@ case $REPO_DIR in
           ;;
 esac
 }
-
 
 bump_version() {
   CURRENT_BRANCH=$(git rev-parse --abbrev-ref HEAD)
