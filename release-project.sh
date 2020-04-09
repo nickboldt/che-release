@@ -2,7 +2,6 @@
 
 set -v
 
-
 # set to 1 to actually trigger changes in the release branch
 TRIGGER_RELEASE=0 
 
@@ -15,8 +14,9 @@ CHE_UPDATE_IMAGES=0
 CHE_UPDATE_DEPENDENCIES=0
 CREATE_NEW_PLUGINS=0
 
+
+
 init_variables() {
-echo "init2131243251324rqfsfd"
 REPO_DIR=${REPO##*/}
 echo $REPO_DIR
 case $REPO_DIR in
@@ -157,20 +157,13 @@ fi
 
 init_variables
 
-set +e
-  ask "Remove the tag if it already exists?"
-  result=$?
-set -e
+ask "Remove the tag if it already exists?"
+result=$?
 
 if [[ $result == 0 ]]; then
   git add -A
   git push origin :${VERSION}
 fi
-
-# DEBUG
-echo ${VERSION}
-echo ${REPO}
-echo ${MAVEN_PARENT_UPDATE}
 
 # derive branch from version
 BRANCH=${VERSION%.*}.x
