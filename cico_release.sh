@@ -69,18 +69,18 @@ build_and_deploy_artifacts() {
 }
 
 # TODO ensure usage of respective bugfix branches
-prepare_projects() {
+checkout_projects() {
     pwd
-    prepare_project git@github.com:eclipse/che-parent
-    prepare_project git@github.com:eclipse/che-docs
-    prepare_project git@github.com:eclipse/che
-    prepare_project git@github.com:eclipse/che-dashboard
-    prepare_project git@github.com:eclipse/che-workspace-loader
+    checkout_project git@github.com:eclipse/che-parent
+    checkout_project git@github.com:eclipse/che-docs
+    checkout_project git@github.com:eclipse/che
+    checkout_project git@github.com:eclipse/che-dashboard
+    checkout_project git@github.com:eclipse/che-workspace-loader
 }
 
-prepare_project() {
+checkout_project() {
     PROJECT="${1##*/}"
-    echo "preparing project $PROJECT with ${BRANCH} branch"
+    echo "checking out project $PROJECT with ${BRANCH} branch"
 
     git clone $1
     cd $PROJECT
@@ -100,25 +100,48 @@ prepare_project() {
 
 # ensure proper version is used
 apply_transformations() {
-    #sed -i "/<\/parent>/i \ \ \ \ \ \ \ \ <relativePath>../che-parent/dependencies</relativePath>" che-dashboard/pom.xml che-docs/pom.xml che-workspace-loader/pom.xml che/pom.xml
     scl enable rh-maven33 "mvn versions:set -DgenerateBackupPoms=false -DnewVersion=${CHE_VERSION} -DprocessAllModules"
-    #mvn versions:set -DgenerateBackupPoms=false -DnewVersion=${CHE_VERSION} -DprocessAllModules
+    #mvn versions:set -DgenerateBackupPoms=false -DnewVersion=${CHE_VERSION} -DprocessAllModules #for local use
 
-    #TODO more elegant way to execute this script
-    DIR=pwd
-    #TODO run .ci/set_tag_version_images image script
+    #TODO more elegant way to execute these scripts
+    cd che/.ci
+    ./set_tag_version_images_linux ${CHE_VERSION}
+    echo "tag versions of images have been set in che-server"
+
+    # Replace dependencies in che-server parent
+    cd ..
+    sed -i -e "s#${VERSION}-SNAPSHOT#${NEXTVERSION}#" pom.xml
+    cd ..
+    echo "dependencies updated in che-server parent"
 }
 
-# TODO change it to something else?
+# TODO change it to someone else?
 setup_gitconfig() {
   git config --global user.name "Vitalii Parfonov"
   git config --global user.email vparfono@redhat.com
 }
 
 create_tags() {
+    tag_and_commit che-parent
+    tag_and_commit che-docs
+    tag_and_commit che-dashboard
+    tag_and_commit che-workspace-loader
+    tag_and_commit che
+}
+
+tag_and_commit() {
     cd $1
-    git tag "${CHE_VERSION}" || die_with "Failed to create tag ${CHE_VERSION}! Release has been deployed, however"
-    git push --tags ||  die_with "Failed to push tags. Please do this manually"
+    git commit -asm "Release version ${CHE_VERSION}"
+    if [ $(git tag -l "$CHE_VERSION") ]; then
+        echo "tag ${CHE_VERSION} already exists! recreating ..."
+        git tag "${CHE_VERSION}"
+    else
+        echo "creating new tag ${CHE_VERSION}"
+        git push origin :${CHE_VERSION}
+        git tag "${CHE_VERSION}"
+    fi
+    git push --tags
+    echo "tag created and pushed for $1"
     cd ..
 }
 
@@ -221,13 +244,17 @@ pushImagesOnQuay() {
 load_jenkins_vars
 load_mvn_settings_gpg_key
 install_deps
+setup_gitconfig
 
 evaluate_che_variables
-prepare_projects
+# insert che-theia/che-machine-exec/che-plugin-registry/che-devfile-registry release flow here
+# release of che should start only when all necessary release images are available on Quay
+
+checkout_projects
 apply_transformations
+create_tags
 
 #build_and_deploy_artifacts
-#create_tags
 #buildImages  ${CHE_VERSION}
 #tagLatestImages ${CHE_VERSION}
 #pushImagesOnQuay ${CHE_VERSION} pushLatest
