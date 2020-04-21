@@ -44,7 +44,7 @@ evaluate_che_variables() {
     BRANCH=${CHE_VERSION%.*}.x
     echo "Branch: ${BRANCH}"
 
-    if [[${CHE_VERSION} == *".0" ]]; then
+    if [[ ${CHE_VERSION} == *".0" ]]; then
         BASEBRANCH="master"
     else
         BASEBRANCH="${BRANCH}"
@@ -86,12 +86,14 @@ prepare_project() {
     cd $PROJECT
     git checkout ${BASEBRANCH}
 
+    set -x
     if [[ "${BASEBRANCH}" != "${BRANCH}" ]]; then
         git branch "${BRANCH}" || git checkout "${BRANCH}" && git pull origin "${BRANCH}"
         git push origin "${BRANCH}"
         git fetch origin "${BRANCH}:${BRANCH}"
         git checkout "${BRANCH}"
     fi
+    set -x
     cd ..
 
 }
