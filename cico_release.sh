@@ -43,6 +43,15 @@ evaluate_che_variables() {
     # derive branch from version
     BRANCH=${CHE_VERSION%.*}.x
     echo "Branch: ${BRANCH}"
+
+    if [[${CHE_VERSION} == *".0" ]]; then
+        BASEBRANCH="master"
+    else
+        BASEBRANCH="${BRANCH}"
+    fi
+    echo "Basebranch: ${BASEBRANCH}"
+
+        
 }
 
 build_and_deploy_artifacts() {
@@ -62,23 +71,36 @@ build_and_deploy_artifacts() {
 # TODO ensure usage of respective bugfix branches
 prepare_projects() {
     pwd
-    prepare_project git@github.com:eclipse/che-parent.git
-    prepare_project git@github.com:eclipse/che-docs.git
-    prepare_project git@github.com:eclipse/che.git
-    prepare_project git@github.com:eclipse/che-dashboard.git
-    prepare_project git@github.com:eclipse/che-workspace-loader.git
+    prepare_project git@github.com:eclipse/che-parent
+    prepare_project git@github.com:eclipse/che-docs
+    prepare_project git@github.com:eclipse/che
+    prepare_project git@github.com:eclipse/che-dashboard
+    prepare_project git@github.com:eclipse/che-workspace-loader
 }
 
 prepare_project() {
-    echo "preparing project $1 with ${BRANCH} branch"
-    git clone $1 --branch ${BRANCH}
+    PROJECT="${1##*/}"
+    echo "preparing project $PROJECT with ${BRANCH} branch"
+
+    git clone $1
+    cd $PROJECT
+    git checkout ${BASEBRANCH}
+
+    if [[ "${BASEBRANCH}" != "${BRANCH}" ]]; then
+        git branch "${BRANCH}" || git checkout "${BRANCH}" && git pull origin "${BRANCH}"
+        git push origin "${BRANCH}"
+        git fetch origin "${BRANCH}:${BRANCH}"
+        git checkout "${BRANCH}"
+    fi
+    cd ..
+
 }
 
 # ensure proper version is used
 apply_transformations() {
     #sed -i "/<\/parent>/i \ \ \ \ \ \ \ \ <relativePath>../che-parent/dependencies</relativePath>" che-dashboard/pom.xml che-docs/pom.xml che-workspace-loader/pom.xml che/pom.xml
     scl enable rh-maven33 "mvn versions:set -DgenerateBackupPoms=false -DnewVersion=${CHE_VERSION} -DprocessAllModules"
-    mvn versions:set -DgenerateBackupPoms=false -DnewVersion=${CHE_VERSION} -DprocessAllModules
+    #mvn versions:set -DgenerateBackupPoms=false -DnewVersion=${CHE_VERSION} -DprocessAllModules
 
     #TODO more elegant way to execute this script
     DIR=pwd
