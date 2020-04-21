@@ -26,9 +26,15 @@ load_mvn_settings_gpg_key() {
 
 install_deps(){
     set +x
-    yum -q -y update
-    yum -q -y install centos-release-scl-rh java-1.8.0-openjdk-devel git 
-    yum -q -y install rh-maven33
+    yum -y update
+    yum -y install centos-release-scl-rh java-1.8.0-openjdk-devel git 
+    yum -y install rh-maven33
+    yum install -y yum-utils device-mapper-persistent-data lvm2
+    yum-config-manager --add-repo https://download.docker.com/linux/centos/docker-ce.repo
+    curl -sL https://rpm.nodesource.com/setup_10.x | bash -
+    yum-config-manager --add-repo https://dl.yarnpkg.com/rpm/yarn.repo
+    yum install -y docker-ce nodejs yarn gcc-c++ make
+    service docker start
 }
 
 evaluate_che_variables() {
@@ -188,9 +194,9 @@ pushImagesOnQuay() {
         done
 }
 
-#load_jenkins_vars
-#load_mvn_settings_gpg_key
-#install_deps
+load_jenkins_vars
+load_mvn_settings_gpg_key
+install_deps
 
 evaluate_che_variables
 prepare_projects
