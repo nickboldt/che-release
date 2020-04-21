@@ -59,10 +59,8 @@ prepare_projects() {
     prepare_project git@github.com:eclipse/che-parent.git
     prepare_project git@github.com:eclipse/che-docs.git
     prepare_project git@github.com:eclipse/che.git
-
-    # TODO UNCOMMENT FOR POST 7.10.x releases!!!
-    #git clone git@github.com:eclipse/che-dashboard.git
-    #git clone git@github.com:eclipse/che-workspace-loader.git
+    prepare_project git@github.com:eclipse/che-dashboard.git
+    prepare_project git@github.com:eclipse/che-workspace-loader.git
 }
 
 prepare_project() {
