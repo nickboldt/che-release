@@ -27,7 +27,7 @@ load_mvn_settings_gpg_key() {
 install_deps(){
     set +x
     yum -y update
-    yum -y install centos-release-scl-rh java-1.8.0-openjdk-devel git 
+    yum -y install centos-release-scl-rh java-1.8.0-openjdk-devel git skopeo
     yum -y install rh-maven33
     yum install -y yum-utils device-mapper-persistent-data lvm2
     yum-config-manager --add-repo https://download.docker.com/linux/centos/docker-ce.repo
@@ -100,12 +100,17 @@ checkout_project() {
 
 # ensure proper version is used
 apply_transformations() {
+    # first, update che-parent version by invoking the command specifically from this directory
+    cd che-parent
+    scl enable rh-maven33 "mvn versions:set -DgenerateBackupPoms=false -DnewVersion=${CHE_VERSION}"
+    cd .. 
+
     scl enable rh-maven33 "mvn versions:set -DgenerateBackupPoms=false -DnewVersion=${CHE_VERSION} -DprocessAllModules"
     #mvn versions:set -DgenerateBackupPoms=false -DnewVersion=${CHE_VERSION} -DprocessAllModules #for local use
 
     #TODO more elegant way to execute these scripts
     cd che/.ci
-    ./set_tag_version_images_linux ${CHE_VERSION}
+    ./set_tag_version_images_linux.sh ${CHE_VERSION}
     echo "tag versions of images have been set in che-server"
 
     # Replace dependencies in che-server parent
@@ -254,7 +259,7 @@ checkout_projects
 apply_transformations
 create_tags
 
-#build_and_deploy_artifacts
-#buildImages  ${CHE_VERSION}
-#tagLatestImages ${CHE_VERSION}
-#pushImagesOnQuay ${CHE_VERSION} pushLatest
+build_and_deploy_artifacts
+buildImages  ${CHE_VERSION}
+tagLatestImages ${CHE_VERSION}
+pushImagesOnQuay ${CHE_VERSION} pushLatest
