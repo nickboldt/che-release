@@ -69,7 +69,7 @@ build_and_deploy_artifacts() {
 }
 
 # TODO ensure usage of respective bugfix branches
-checkout_projects() {
+che_() {
     pwd
     checkout_project git@github.com:eclipse/che-parent
     checkout_project git@github.com:eclipse/che-docs
@@ -99,7 +99,7 @@ checkout_project() {
 }
 
 # ensure proper version is used
-apply_transformations() {
+pre_tag_transformations() {
     # first, update che-parent version by invoking the command specifically from this directory
     cd che-parent
     scl enable rh-maven33 "mvn versions:set -DgenerateBackupPoms=false -DnewVersion=${CHE_VERSION}"
@@ -118,6 +118,16 @@ apply_transformations() {
     sed -i -e "s#${VERSION}-SNAPSHOT#${NEXTVERSION}#" pom.xml
     cd ..
     echo "dependencies updated in che-server parent"
+}
+
+pre_build_transformations() {
+    sed -i '/org.eclipse.che.parent/i \ \ \ \ <parent>' che-parent/pom.xml
+    sed -i '/<parent>/a \ \ \ \ <\/parent>' che-parent/pom.xml
+    sed -i '/<parent>/a \ \ \ \ \ \ \ \ <version>7.12.0<\/artifactId>' che-parent/pom.xml
+    sed -i '/<parent>/a \ \ \ \ \ \ \ \ <artifactId>che-release<\/artifactId>' che-parent/pom.xml
+    sed -i '/<parent>/a \ \ \ \ \ \ \ \ <groupId>org.eclipse.che<\/groupId>' che-parent/pom.xml
+    sed -i "/<\/parent>/i \ \ \ \ \ \ \ \ <relativePath>../che-parent/dependencies</relativePath>" che-dashboard/pom.xml che-docs/pom.xml che-workspace-loader/pom.xml che/pom.xml
+
 }
 
 # TODO change it to someone else?
@@ -250,15 +260,22 @@ load_jenkins_vars
 load_mvn_settings_gpg_key
 install_deps
 setup_gitconfig
-
 evaluate_che_variables
 # insert che-theia/che-machine-exec/che-plugin-registry/che-devfile-registry release flow here
 # release of che should start only when all necessary release images are available on Quay
 
-checkout_projects
-apply_transformations
+release_che_theia
+release_che_machine_exec
+release_che_devfile_registry
+release_che_plugin_registry
+
+wait_for_images
+
+checkout_che_projects
+pre_tag_transformations
 create_tags
 
+pre_build_transformation
 build_and_deploy_artifacts
 buildImages  ${CHE_VERSION}
 tagLatestImages ${CHE_VERSION}
