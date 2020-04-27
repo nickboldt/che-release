@@ -106,12 +106,11 @@ apply_transformations() {
     sed -i '1677i \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ <module>../che</module>' che-parent/pom.xml
     sed -i '1677i \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ <module>../che-workspace-loader</module>' che-parent/pom.xml
     sed -i '1677i \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ <module>../che-dashboard</module>' che-parent/pom.xml
-    sed -i '1677i \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ <module>../che-docs</module>' che-parent/pom.xml
     sed -i '1677i \ \ \ \ \ \ \ \ \ \ \ \ <modules>' che-parent/pom.xml
 
     echo "[INFO] parent pom has been expanded with modules for release profile"
 
-    sed -i "/<\/parent>/i \ \ \ \ \ \ \ \ <relativePath>../che-parent/dependencies</relativePath>" che-dashboard/pom.xml che-docs/pom.xml che-workspace-loader/pom.xml che/pom.xml
+    sed -i "/<\/parent>/i \ \ \ \ \ \ \ \ <relativePath>../che-parent/dependencies</relativePath>" che-dashboard/pom.xml che-workspace-loader/pom.xml che/pom.xml
     echo "[INFO] relative path to parent pom has been set"
 
     cd che-parent
@@ -163,7 +162,8 @@ tag_and_commit() {
     cd ..
 }
 
- # KEEP RIGHT ORDER!!!
+# KEEP RIGHT ORDER!!!
+# TODO add che-docs as a new image? 
 DOCKER_FILES_LOCATIONS=(
     che/dockerfiles/endpoint-watcher
     che/dockerfiles/keycloak
@@ -174,6 +174,7 @@ DOCKER_FILES_LOCATIONS=(
     che/dockerfiles/e2e
 )
 
+# TODO add che-docs as a new image? 
 IMAGES_LIST=(
     quay.io/eclipse/che-endpoint-watcher
     quay.io/eclipse/che-keycloak
