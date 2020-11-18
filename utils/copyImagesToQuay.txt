@@ -4,7 +4,9 @@
 
 docker.io/centos/mongodb-36-centos7
 docker.io/centos/mysql-57-centos7
+# registries use :latest, operator csv uses :9.6
 docker.io/centos/postgresql-96-centos7
+docker.io/centos/postgresql-96-centos7:9.6
 docker.io/dirigiblelabs/dirigible-openshift:3.4.0
 docker.io/ksmster/che-editor-jupyter:5.7.0
 docker.io/traefik:v2.2.8
