@@ -474,6 +474,12 @@ releaseOperator() {
     curl https://api.github.com/repos/eclipse/che-operator/actions/workflows/3593082/dispatches -X POST -H "Authorization: token ${GITHUB_TOKEN}" -H "Accept: application/vnd.github.v3+json" -d "{\"ref\":\"master\",\"inputs\": {\"version\":\"${CHE_VERSION}\"} }"
 }
 
+# copy an image from registry a to b (preserving all arches)
+copyImageToQuay() {
+    skopeo copy --all docker://${1} docker://${2}
+    verifyContainerExistsWithTimeout ${2} 5
+}
+
 loadJenkinsVars
 loadMvnSettingsGpgKey
 installDeps
@@ -539,6 +545,9 @@ fi
 for image in ${IMAGES_LIST[@]}; do
     verifyContainerExistsWithTimeout ${image}:${CHE_VERSION} 30
 done
+
+# copy postgres image from docker.io to quay.io
+copyImageToQuay docker.io/centos/postgresql-96-centos7:9.6 quay.io/eclipse/che-postgres:${CHE_VERSION}
 
 # Release Che operator (create PRs)
 if [[ ${PHASES} == *"7"* ]]; then
