@@ -45,7 +45,7 @@ jobs:
           # always skip concurrent runs
           concurrent_skipping: 'always'
           # prevent re-running the same release for the same version and phases
-          skip_after_successful_duplicate: 'true'
+          skip_after_successful_duplicate: 'false'
           # "workflow_dispatch" trigger is set for exclusion by default, so we have to clear it
           do_not_skip: '[]'
   build:
