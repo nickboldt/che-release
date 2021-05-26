@@ -211,7 +211,7 @@ releaseDashboard() {
 }
 
 releaseCheServer() {
-    invokeAction eclipse/che "Release Che Server" "5536792" "version=${CHE_VERSION},releaseParent=${RELEASE_CHE_PARENT},versionParent=${VERSION_CHE_PARENT}"
+    invokeAction eclipse-che/che-server "Release Che Server" "9230035" "version=${CHE_VERSION},releaseParent=${RELEASE_CHE_PARENT},versionParent=${VERSION_CHE_PARENT}"
 }
 
 releaseCheOperator() {
@@ -280,6 +280,7 @@ if [[ ${PHASES} == *"1"* ]]; then
     releaseDashboard
     releaseDwoOperator
     branchJWTProxyAndKIP
+    releaseCheServer
 fi
 wait
 verifyContainerExistsWithTimeout ${REGISTRY}/${ORGANIZATION}/che-machine-exec:${CHE_VERSION} 60
@@ -288,64 +289,55 @@ verifyContainerExistsWithTimeout ${REGISTRY}/${ORGANIZATION}/che-dashboard:${CHE
 # https://quay.io/repository/devfile/devworkspace-controller?tab=tags
 verifyContainerExistsWithTimeout ${REGISTRY}/devfile/devworkspace-controller:${DWO_VERSION} 60
 
-
-set +x
-# Release server (depends on dashboard)
-if [[ ${PHASES} == *"2"* ]]; then
-    releaseCheServer
-fi
-
 IMAGES_LIST=(
     quay.io/eclipse/che-endpoint-watcher
     quay.io/eclipse/che-keycloak
     quay.io/eclipse/che-postgres
     quay.io/eclipse/che-dev
     quay.io/eclipse/che-server
-    quay.io/eclipse/che-dashboard-dev
     quay.io/eclipse/che-e2e
 )
-if [[ ${PHASES} == *"2"* ]] || [[ ${PHASES} == *"3"* ]] || [[ ${PHASES} == *"6"* ]]; then
-    # verify images all created from IMAGES_LIST
-    for image in "${IMAGES_LIST[@]}"; do
-        verifyContainerExistsWithTimeout ${image}:${CHE_VERSION} 60
-    done
-fi
 
-# Release che-theia (depends on che-server's typescript dto)
-if [[ ${PHASES} == *"3"* ]]; then
+for image in "${IMAGES_LIST[@]}"; do
+    verifyContainerExistsWithTimeout ${image}:${CHE_VERSION} 60
+done
+
+set +x
+# Release server (depends on dashboard)
+if [[ ${PHASES} == *"2"* ]]; then
     releaseCheTheia
 fi
 
-if [[ ${PHASES} == *"3"* ]] || [[ ${PHASES} == *"6"* ]]; then
+if [[ ${PHASES} == *"2"* ]] || [[ ${PHASES} == *"5"* ]]; then
   verifyContainerExistsWithTimeout ${REGISTRY}/${ORGANIZATION}/che-theia:${CHE_VERSION} 60
   verifyContainerExistsWithTimeout ${REGISTRY}/${ORGANIZATION}/che-theia-dev:${CHE_VERSION} 60
   verifyContainerExistsWithTimeout ${REGISTRY}/${ORGANIZATION}/che-theia-endpoint-runtime-binary:${CHE_VERSION} 60
 fi
 
 # Release plugin-registry (depends on che-theia and machine-exec)
-if [[ ${PHASES} == *"4"* ]]; then
+if [[ ${PHASES} == *"3"* ]]; then
     releasePluginRegistry
 fi
 
-if [[ ${PHASES} == *"4"* ]] || [[ ${PHASES} == *"6"* ]]; then
+if [[ ${PHASES} == *"3"* ]] || [[ ${PHASES} == *"5"* ]]; then
   verifyContainerExistsWithTimeout ${REGISTRY}/${ORGANIZATION}/che-plugin-registry:${CHE_VERSION} 30
 fi
 
 # Release devworkspace che operator (depends on devworkspace-operator)
 # TODO this will go away when it's part of che-operator
-if [[ ${PHASES} == *"5"* ]]; then
+if [[ ${PHASES} == *"4"* ]]; then
     releaseDwoCheOperator
 fi
 
 # TODO this will go away when it's part of che-operator
-if [[ ${PHASES} == *"5"* ]] || [[ ${PHASES} == *"6"* ]]; then
+if [[ ${PHASES} == *"4"* ]] || [[ ${PHASES} == *"5"* ]]; then
     # https://quay.io/repository/che-incubator/devworkspace-che-operator?tab=tags
     verifyContainerExistsWithTimeout ${REGISTRY}/che-incubator/devworkspace-che-operator:v${CHE_VERSION} 30
 fi
 
 # Release Che operator (create PRs)
 set +x
-if [[ ${PHASES} == *"6"* ]]; then
+if [[ ${PHASES} == *"5"* ]]; then
     releaseCheOperator
 fi
 wait
