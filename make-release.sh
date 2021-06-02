@@ -210,6 +210,10 @@ releaseDashboard() {
     invokeAction eclipse-che/che-dashboard "Release Che Dashboard" "3152474" "version=${CHE_VERSION}"
 }
 
+releaseChe() {
+    invokeAction eclipse/che "Release Che" "5536792" "version=${CHE_VERSION}"
+}
+
 releaseCheServer() {
     invokeAction eclipse-che/che-server "Release Che Server" "9230035" "version=${CHE_VERSION},releaseParent=${RELEASE_CHE_PARENT},versionParent=${VERSION_CHE_PARENT}"
 }
