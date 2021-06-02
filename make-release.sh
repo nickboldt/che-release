@@ -285,6 +285,7 @@ if [[ ${PHASES} == *"1"* ]]; then
     releaseDwoOperator
     branchJWTProxyAndKIP
     releaseCheServer
+    releaseChe
 fi
 wait
 verifyContainerExistsWithTimeout ${REGISTRY}/${ORGANIZATION}/che-machine-exec:${CHE_VERSION} 60
