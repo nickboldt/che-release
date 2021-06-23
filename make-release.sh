@@ -147,10 +147,10 @@ invokeAction() {
         # now we have a global value for $workflow_id
     fi
 
-    if [[ ${this_repo} == "devfile/devworkspace-operator" ]] || [[ ${this_repo} == "che-incubator/devworkspace-che-operator" ]] || [[ ${this_repo} == "eclipse-che/che-machine-exec" ]] || [[ ${this_repo} == "eclipse-che/che-dashboard" ]] || [[ ${this_repo} == "eclipse-che/che-operator" ]];then
-        WORKFLOW_MAIN_BRANCH="main"
-    else
+    if [[ ${this_repo} == "che-incubator/kubernetes-image-puller" ]] || [[ ${this_repo} == "eclipse/che-jwtproxy" ]];then
         WORKFLOW_MAIN_BRANCH="master"
+    else
+        WORKFLOW_MAIN_BRANCH="main"
     fi
 
     if [[ ${this_repo} == "devfile/devworkspace-operator" ]];then
