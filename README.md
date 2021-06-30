@@ -64,9 +64,9 @@ Currently there are several phases, representing an order of projects, which we 
 * Phase 3 - [che-theia](https://github.com/eclipse-che/che-theia) - depends on [che-server](https://github.com/eclipse-che/che-server)
 * Phase 4 - [che-plugin-registry](https://github.com/eclipse-che/che-plugin-registry) - depends on [che-theia](https://github.com/eclipse-che/che-theia)
 * Phase 5 - [devworkspace-che-operator](https://github.com/che-incubator/devworkspace-che-operator) - depends on [devworkspace-operator](https://github.com/devfile/devworkspace-operator)
-* Phase 6 - [che-operator](https://github.com/eclipse-che/che-operator) - depends on phases 1 to 4
+* Phase 6 - [che-operator](https://github.com/eclipse-che/che-operator) - depends on phases 1 to 5
 
-The phases list is a comma-separated list (default, which includes all phases "1,2,3,4,5"). Removing certain phases is useful, when you rerun the orchestration job, and certain projects shouldn't be released again. 
+The phases list is a comma-separated list (default, which includes all phases "1,2,3,4,5,6"). Removing certain phases is useful, when you rerun the orchestration job, and certain projects shouldn't be released again. 
 Note that this approach will change, once a new system will be implemented, where we can more clearly specify dependencies between workflows, using special types of GitHub action.
 
 
